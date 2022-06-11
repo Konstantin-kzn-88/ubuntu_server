@@ -20,9 +20,9 @@ class Safety_server(socketserver.BaseRequestHandler):
         if num_direction == 0:
             answer = 'error'
         elif num_direction == 1:
-            answer = math_test.My_math().plus(data)
+            answer = str(math_test.My_math().plus(data))
         elif num_direction == 2:
-            answer = math_test.My_math().multiplication(data)
+            answer = str(math_test.My_math().multiplication(data))
         else:
             answer = 'error'
 
@@ -61,5 +61,5 @@ class Safety_server(socketserver.BaseRequestHandler):
 
 
 if __name__ == '__main__':
-    with socketserver.TCPServer(('', 8888), Safety_server) as server:
+    with ThredingTCPServer(('', 8888), Safety_server) as server:
         server.serve_forever()
