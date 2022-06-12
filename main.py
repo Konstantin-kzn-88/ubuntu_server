@@ -1,6 +1,7 @@
 import socketserver
 import datetime
 from calc.calc_strait_fire import Strait_fire
+from calc.calc_sp_explosion import Explosion
 
 
 class ThredingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -30,8 +31,15 @@ class Safety_server(socketserver.BaseRequestHandler):
         #           0 - пожар пролива расстояние от геом.центра до облучаемого объекта
         #           1 - пожар пролива данные в каждой точке в виде кортежа (рассатояние, интенсивность, пробит, вероятность)
         #           2 - пожар пролива расстояние для интенсивностей (10.5, 7.0, 4.2, 1.4)
-        #           ы
-        #           ы
+        #           3 - взрыв (СП 12.13130-2009) для расстояния
+        #           4 - взрыв (СП 12.13130-2009) данные в каждой точке в виде кортежа (рассатояние, давление, импульс, пробит, вероятность)
+        #           5 - взрыв (СП 12.13130-2009) расстояние для давлений (100, 53, 28, 12, 5, 3)
+        #           6 - в
+        #           7 - в
+        #           8 - в
+        #           9 - в
+        #           10 - в
+
 
         if num_direction == 0:
             answer = Strait_fire().termal_radiation_point(S_spill=data[0], m_sg=data[1], mol_mass=data[2],
@@ -42,6 +50,12 @@ class Safety_server(socketserver.BaseRequestHandler):
         elif num_direction == 2:
             answer = Strait_fire().termal_class_zone(S_spill=data[0], m_sg=data[1], mol_mass=data[2],
                                                      t_boiling=data[3], wind_velocity=data[4])
+        elif num_direction == 3:
+            answer = Explosion().explosion_point(mass=data[0], heat_of_combustion=data[1], z=data[2], radius=data[3])
+        elif num_direction == 4:
+            answer = Explosion().explosion_array(mass=data[0], heat_of_combustion=data[1], z=data[2])
+        elif num_direction == 5:
+            answer = Explosion().explosion_class_zone(mass=data[0], heat_of_combustion=data[1], z=data[2])
         else:
             answer = 'error'
 
@@ -74,7 +88,7 @@ class Safety_server(socketserver.BaseRequestHandler):
             num_direction, data = eval(request)
             return num_direction, data
         except:
-            num_direction, data = 0, 'error'
+            num_direction, data = 404, 'error'
             return num_direction, data
 
 

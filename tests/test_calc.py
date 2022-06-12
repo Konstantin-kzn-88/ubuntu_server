@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from calc import calc_strait_fire, calc_probit
+from calc import calc_strait_fire, calc_probit, calc_sp_explosion
 
 
 class ServerTest(TestCase):
@@ -37,15 +37,16 @@ class ServerTest(TestCase):
         self.assertEqual('Фукнция не может принимать нулевые параметры', e.exception.args[0])
 
     def test_count_array_result(self):
-        self.assertEqual(len(calc_strait_fire.Strait_fire().termal_radiation_array(S_spill=20, m_sg=0.1, mol_mass=44,
-                                                                                   t_boiling=-15, wind_velocity=1)[0]),
-                         len(calc_strait_fire.Strait_fire().termal_radiation_array(S_spill=20, m_sg=0.1, mol_mass=44,
-                                                                                   t_boiling=-15, wind_velocity=1)[1]))
+        for s in range(20, 200, 25):
+            self.assertEqual(len(calc_strait_fire.Strait_fire().termal_radiation_array(S_spill=s, m_sg=0.1, mol_mass=44,
+                                                                                       t_boiling=-15, wind_velocity=1)[0]),
+                             len(calc_strait_fire.Strait_fire().termal_radiation_array(S_spill=s, m_sg=0.1, mol_mass=44,
+                                                                                       t_boiling=-15, wind_velocity=1)[1]))
 
-        self.assertEqual(len(calc_strait_fire.Strait_fire().termal_radiation_array(S_spill=100, m_sg=0.3, mol_mass=144,
-                                                                                   t_boiling=-10, wind_velocity=1)[2]),
-                         len(calc_strait_fire.Strait_fire().termal_radiation_array(S_spill=100, m_sg=0.3, mol_mass=144,
-                                                                                   t_boiling=-10, wind_velocity=1)[3]))
+            self.assertEqual(len(calc_strait_fire.Strait_fire().termal_radiation_array(S_spill=s, m_sg=0.3, mol_mass=144,
+                                                                                       t_boiling=-10, wind_velocity=1)[2]),
+                             len(calc_strait_fire.Strait_fire().termal_radiation_array(S_spill=s, m_sg=0.3, mol_mass=144,
+                                                                                       t_boiling=-10, wind_velocity=1)[3]))
         # END
 
     # START 2. Тестирование пробит-функции
@@ -86,7 +87,42 @@ class ServerTest(TestCase):
         with self.assertRaises(ValueError) as e:
             calc_probit.Probit().probit_strait_fire(dist=10, q_max=0)
         self.assertEqual('math domain error', e.exception.args[0])
+
     # END
+
+    # START 3. Тестирование взрыва (СП 12.13130-2009)
+    def test_explosion_point(self):
+        self.assertEqual(
+            round(
+                calc_sp_explosion.Explosion().explosion_point(mass=254400, heat_of_combustion=46000, z=0.1, radius=500)[
+                    0], 2), 15.5)
+
+    def test_explosion_point_greater_than_zero(self):
+        for m in range(100, 1000, 250):
+            self.assertGreater(
+                round(
+                    calc_sp_explosion.Explosion().explosion_point(mass=m, heat_of_combustion=101000, z=0.1,
+                                                                  radius=50)[0], 1), 0)
+
+    def test_explosion_with_null_param(self):
+        with self.assertRaises(ValueError) as e:
+            calc_sp_explosion.Explosion().explosion_point(mass=0, heat_of_combustion=101000, z=0.1, radius=50)
+        self.assertEqual('Фукнция не может принимать нулевые параметры', e.exception.args[0])
+
+        with self.assertRaises(ValueError) as e:
+            calc_sp_explosion.Explosion().explosion_point(mass=0, heat_of_combustion=0, z=0.1, radius=0)
+        self.assertEqual('Фукнция не может принимать нулевые параметры', e.exception.args[0])
+
+    def test_count_array_result_explosion(self):
+        for m in range(100, 1000, 250):
+            self.assertEqual(
+                len(calc_sp_explosion.Explosion().explosion_array(mass=m, heat_of_combustion=46000, z=0.1)[0]),
+                len(calc_sp_explosion.Explosion().explosion_array(mass=m, heat_of_combustion=46000, z=0.1)[1]))
+
+            self.assertEqual(
+                len(calc_sp_explosion.Explosion().explosion_array(mass=m, heat_of_combustion=46000, z=0.1)[2]),
+                len(calc_sp_explosion.Explosion().explosion_array(mass=m, heat_of_combustion=46000, z=0.1)[3]))
+        # END
 
 
 if __name__ == '__main__':

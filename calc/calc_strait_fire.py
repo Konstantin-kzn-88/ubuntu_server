@@ -113,7 +113,7 @@ class Strait_fire:
         probability_arr = []
 
         # максимальная интенсивность теплового излучения
-        radius = (math.sqrt(4 * S_spill / math.pi) / 2) - 0.5 # нужно расстояние немного меньше чем радиус
+        radius = 0.1
         q_term = self.termal_radiation_point(S_spill, m_sg, mol_mass, t_boiling, wind_velocity, radius)
 
         # просчитаем значения пока интенсивность теплового излучения больше 1.2 кВт/м2
