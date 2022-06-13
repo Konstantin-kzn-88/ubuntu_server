@@ -2,6 +2,7 @@ import socketserver
 import datetime
 from calc.calc_strait_fire import Strait_fire
 from calc.calc_sp_explosion import Explosion
+from calc.calc_tvs_explosion import Explosion as Explosion_tvs
 
 
 class ThredingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -34,13 +35,13 @@ class Safety_server(socketserver.BaseRequestHandler):
         #           3 - взрыв (СП 12.13130-2009) для расстояния
         #           4 - взрыв (СП 12.13130-2009) данные в каждой точке в виде кортежа (рассатояние, давление, импульс, пробит, вероятность)
         #           5 - взрыв (СП 12.13130-2009) расстояние для давлений (100, 53, 28, 12, 5, 3)
-        #           6 - в
-        #           7 - в
-        #           8 - в
+        #           6 - взрыв (методика ТВС) для расстояния
+        #           7 - взрыв (методика ТВС) данные в каждой точке в виде кортежа (рассатояние, давление, импульс, пробит, вероятность)
+        #           8 - взрыв (методика ТВС) расстояние для давлений (100, 53, 28, 12, 5, 3)
         #           9 - в
         #           10 - в
 
-
+        # Пожар пролива
         if num_direction == 0:
             answer = Strait_fire().termal_radiation_point(S_spill=data[0], m_sg=data[1], mol_mass=data[2],
                                                           t_boiling=data[3], wind_velocity=data[4], radius=data[5])
@@ -50,12 +51,27 @@ class Safety_server(socketserver.BaseRequestHandler):
         elif num_direction == 2:
             answer = Strait_fire().termal_class_zone(S_spill=data[0], m_sg=data[1], mol_mass=data[2],
                                                      t_boiling=data[3], wind_velocity=data[4])
+        # Взрыв СП
         elif num_direction == 3:
             answer = Explosion().explosion_point(mass=data[0], heat_of_combustion=data[1], z=data[2], radius=data[3])
         elif num_direction == 4:
             answer = Explosion().explosion_array(mass=data[0], heat_of_combustion=data[1], z=data[2])
         elif num_direction == 5:
             answer = Explosion().explosion_class_zone(mass=data[0], heat_of_combustion=data[1], z=data[2])
+
+        # Взрыв ТВС
+        elif num_direction == 6:
+            answer = Explosion_tvs().explosion_point(class_substance=data[0], view_space=data[1], mass=data[2],
+                                                     heat_of_combustion=data[3], sigma=data[4], energy_level=data[5],
+                                                     radius=data[6])
+        elif num_direction == 7:
+            answer = Explosion_tvs().explosion_array(class_substance=data[0], view_space=data[1], mass=data[2],
+                                                     heat_of_combustion=data[3], sigma=data[4], energy_level=data[5])
+
+        elif num_direction == 8:
+            answer = Explosion_tvs().explosion_class_zone(class_substance=data[0], view_space=data[1], mass=data[2],
+                                                          heat_of_combustion=data[3], sigma=data[4],
+                                                          energy_level=data[5])
         else:
             answer = 'error'
 
