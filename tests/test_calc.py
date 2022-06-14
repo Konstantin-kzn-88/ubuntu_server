@@ -1,6 +1,7 @@
 import random
 from unittest import TestCase, main
-from calc import calc_strait_fire, calc_probit, calc_sp_explosion, calc_tvs_explosion, calc_fireball
+from calc import calc_strait_fire, calc_probit, calc_sp_explosion, calc_tvs_explosion, calc_fireball, \
+    calc_lower_concentration
 
 
 class ServerTest(TestCase):
@@ -249,6 +250,23 @@ class ServerTest(TestCase):
 
             self.assertEqual(len(calc_fireball.Fireball().fireball_array(mass=m, ef=450)[2]),
                              len(calc_fireball.Fireball().fireball_array(mass=m, ef=450)[3]))
+
+    # END
+
+    # START 5. Тестирование НКПР и пожара-вспышки
+    def test_lclp(self):
+        self.assertEqual(
+            round(calc_lower_concentration.LCLP().lower_concentration_limit(mass=200, mol_mass=100, t_boiling=63,
+                                                                            lower_concentration=1.8)[0], 2), 24.14)
+
+    def test_lclp_greater_than_zero(self):
+        for m in range(100, 1000, 250):
+            t = random.choice((10, 100))
+            l = random.randint(1, 10)
+            self.assertGreater(
+                round(calc_lower_concentration.LCLP().lower_concentration_limit(mass=m, mol_mass=100, t_boiling=t,
+                                                                                lower_concentration=l)[0], 1), 0)
+
     # END
 
 

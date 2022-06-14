@@ -4,6 +4,7 @@ from calc.calc_strait_fire import Strait_fire
 from calc.calc_sp_explosion import Explosion
 from calc.calc_tvs_explosion import Explosion as Explosion_tvs
 from calc.calc_fireball import Fireball
+from calc.calc_lower_concentration import LCLP
 
 
 class ThredingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -42,6 +43,7 @@ class Safety_server(socketserver.BaseRequestHandler):
         #      9 - огненный шар для расстояния
         #      10 - огненный шар данные в каждой точке в виде кортежа (рассатояние, интенсивность, доза, пробит, вероятность)
         #      11 - огненный шар расстояние для доз [600, 320, 220, 120] кДж/м2
+        #      12 - НКПР и пожар-вспышка
 
         # Пожар пролива
         if num_direction == 0:
@@ -76,11 +78,15 @@ class Safety_server(socketserver.BaseRequestHandler):
 
         # Огненный шар
         elif num_direction == 9:
-            answer = Fireball().fireball_point(mass=data[0], ef=data[1], radius = data[2])
+            answer = Fireball().fireball_point(mass=data[0], ef=data[1], radius=data[2])
         elif num_direction == 10:
             answer = Fireball().fireball_array(mass=data[0], ef=data[1])
         elif num_direction == 11:
             answer = Fireball().termal_class_zone(mass=data[0], ef=data[1])
+
+        elif num_direction == 12:
+            answer = LCLP().lower_concentration_limit(mass=data[0], mol_mass=data[1], t_boiling=data[2],
+                                                      lower_concentration=data[3])
         else:
             answer = 'error'
 
