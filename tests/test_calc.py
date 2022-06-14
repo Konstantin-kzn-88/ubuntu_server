@@ -1,6 +1,6 @@
-from unittest import TestCase, main
-from calc import calc_strait_fire, calc_probit, calc_sp_explosion, calc_tvs_explosion
 import random
+from unittest import TestCase, main
+from calc import calc_strait_fire, calc_probit, calc_sp_explosion, calc_tvs_explosion, calc_fireball
 
 
 class ServerTest(TestCase):
@@ -13,12 +13,13 @@ class ServerTest(TestCase):
             6.3)
 
     def test_strait_fire_greater_than_zero(self):
-        for _ in range(1,5):
-            s= random.randint(20,50)
-            v = random.choice((1,2,3,4,5))
+        for _ in range(1, 5):
+            s = random.randint(20, 50)
+            v = random.choice((1, 2, 3, 4, 5))
             self.assertGreater(
                 round(calc_strait_fire.Strait_fire().termal_radiation_point(S_spill=s, m_sg=0.06, mol_mass=95,
-                                                                            t_boiling=68, wind_velocity=v, radius=40), 1),
+                                                                            t_boiling=68, wind_velocity=v, radius=40),
+                      1),
                 0)
 
     def test_strait_fire_lpg(self):
@@ -42,7 +43,7 @@ class ServerTest(TestCase):
 
     def test_count_array_result(self):
         for s in range(20, 200, 25):
-            v = random.choice((1,2,3,4,5))
+            v = random.choice((1, 2, 3, 4, 5))
             self.assertEqual(len(calc_strait_fire.Strait_fire().termal_radiation_array(S_spill=s, m_sg=0.1, mol_mass=44,
                                                                                        t_boiling=-15, wind_velocity=v)[
                                      0]),
@@ -218,6 +219,36 @@ class ServerTest(TestCase):
                 len(calc_tvs_explosion.Explosion().explosion_array(class_substance=1, view_space=1, mass=m,
                                                                    heat_of_combustion=46000, sigma=7, energy_level=2)[
                         3]))
+
+    # END
+
+    # START 5. Тестирование огненного шара
+    def test_fireball_point(self):
+        self.assertEqual(
+            round(calc_fireball.Fireball().fireball_point(mass=2.54 * pow(10, 5), ef=450, radius=500)[0], 2), 12.9)
+
+    def test_fireball_greater_than_zero(self):
+        for m in range(100, 1000, 250):
+            e = random.choice((350, 450))
+            r = random.randint(100, 200)
+            self.assertGreater(round(calc_fireball.Fireball().fireball_point(mass=m, ef=e, radius=r)[0], 1), 0)
+
+    def test_fireball_with_null_param(self):
+        with self.assertRaises(ValueError) as e:
+            calc_fireball.Fireball().fireball_point(mass=0, ef=0, radius=0)
+        self.assertEqual('Фукнция не может принимать нулевые параметры', e.exception.args[0])
+
+        with self.assertRaises(ValueError) as e:
+            calc_fireball.Fireball().fireball_point(mass=0, ef=450, radius=10)
+        self.assertEqual('Фукнция не может принимать нулевые параметры', e.exception.args[0])
+
+    def test_fireball_explosion_tvs(self):
+        for m in range(1000, 10000, 250):
+            self.assertEqual(len(calc_fireball.Fireball().fireball_array(mass=m, ef=450)[0]),
+                             len(calc_fireball.Fireball().fireball_array(mass=m, ef=450)[1]))
+
+            self.assertEqual(len(calc_fireball.Fireball().fireball_array(mass=m, ef=450)[2]),
+                             len(calc_fireball.Fireball().fireball_array(mass=m, ef=450)[3]))
     # END
 
 
