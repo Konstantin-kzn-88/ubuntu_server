@@ -83,7 +83,7 @@ class Safety_server(socketserver.BaseRequestHandler):
             answer = Fireball().fireball_array(mass=data[0], ef=data[1])
         elif num_direction == 11:
             answer = Fireball().termal_class_zone(mass=data[0], ef=data[1])
-
+        # Пожар вспышка
         elif num_direction == 12:
             answer = LCLP().lower_concentration_limit(mass=data[0], mol_mass=data[1], t_boiling=data[2],
                                                       lower_concentration=data[3])
