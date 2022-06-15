@@ -117,6 +117,7 @@ class Safety_server(socketserver.BaseRequestHandler):
     def get_data_in_request(self, request: str):
         try:
             num_direction, data = eval(request)
+            data = [float(i) for i in data]
             return num_direction, data
         except:
             num_direction, data = 404, 'error'
