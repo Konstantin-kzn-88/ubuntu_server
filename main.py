@@ -5,6 +5,7 @@ from calc.calc_sp_explosion import Explosion
 from calc.calc_tvs_explosion import Explosion as Explosion_tvs
 from calc.calc_fireball import Fireball
 from calc.calc_lower_concentration import LCLP
+import struct
 
 
 class ThredingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -92,7 +93,8 @@ class Safety_server(socketserver.BaseRequestHandler):
 
         # 5. Закодируем ответ в байты и отправим его пользователю
         ans = bytes(str(answer), encoding='utf-8')
-        self.request.sendall(ans)
+        # self.request.sendall(ans)
+        self.send_msg(self.request,ans)
 
         # 6. Запишем лог
         self.log_write(addres, request, str(answer))
@@ -123,6 +125,10 @@ class Safety_server(socketserver.BaseRequestHandler):
             num_direction, data = 404, 'error'
             return num_direction, data
 
+    def send_msg(self, sock, msg):
+        # Каждое сообщение будет иметь префикс в 4 байта блинной(network byte order)
+        # msg = struct.pack('>I', len(msg)) + msg
+        sock.send(msg)
 
 if __name__ == '__main__':
     with ThredingTCPServer(('', 8888), Safety_server) as server:

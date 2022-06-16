@@ -25,17 +25,20 @@ class Explosion:
         if 0 in (class_substance, view_space, mass):
             raise ValueError(f'Фукнция не может принимать нулевые параметры')
 
+        class_substance = int(class_substance)
+        view_space = int(view_space)
+
         tmp = ((500, 500, 300, 200),
                (500, 300, 200, 150),
                (300, 200, 150, 43 * pow(mass, 1 / 6)),
                (200, 150, 43 * pow(mass, 1 / 6), 26 * pow(mass, 1 / 6)))
 
-        v_burn_rate = tmp[class_substance-1][view_space - 1] if view_space >= 1 and view_space <= 4 else min(tmp)
+        v_burn_rate = tmp[class_substance - 1][view_space - 1] if view_space >= 1 and view_space <= 4 else min(tmp)
 
         return v_burn_rate
 
     def explosion_point(self, class_substance: int, view_space: int, mass: float,
-                        heat_of_combustion: float, sigma: int, energy_level: int, radius: float) -> list:
+                        heat_of_combustion: float, sigma: int, energy_level: int, radius: float) -> tuple:
 
         """
         :@param class_substance: класс взрывоопасности вещества (1-4)
@@ -55,6 +58,9 @@ class Explosion:
         # Проверки
         if 0 in (class_substance, view_space, mass, heat_of_combustion, sigma, energy_level, radius):
             raise ValueError(f'Фукнция не может принимать нулевые параметры')
+
+        class_substance = int(class_substance)
+        view_space = int(view_space)
 
         v_burn_rate = self.burn_rate(class_substance, view_space, mass)
 
@@ -85,7 +91,7 @@ class Explosion:
         return res
 
     def explosion_array(self, class_substance: int, view_space: int, mass: float,
-                        heat_of_combustion: float, sigma: int, energy_level: int) -> list:
+                        heat_of_combustion: float, sigma: int, energy_level: int) -> tuple:
 
         """
         :@param class_substance: класс взрывоопасности вещества (1-4)
@@ -117,15 +123,15 @@ class Explosion:
                                        energy_level, radius)
             delta_p = res[0]
             impulse = res[1]
-            probit = Probit().probit_explosion(delta_p, impulse)
-            probability = Probit().probability(probit)
+            probit = round(Probit().probit_explosion(delta_p, impulse),3)
+            probability = round(Probit().probability(probit),3)
             # append
             radius_arr.append(round(radius, 2))
             delta_p_arr.append(delta_p)
             impulse_arr.append(impulse)
             probit_arr.append(probit)
             probability_arr.append(probability)
-            radius += 0.1
+            radius += 0.5
 
         result = (radius_arr, delta_p_arr, impulse_arr, probit_arr, probability_arr)
 
