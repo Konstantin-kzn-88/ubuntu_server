@@ -23,10 +23,11 @@ class Calc_gui(QtWidgets.QMainWindow):
         save_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/save.png')
         calc_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/comp.png')
         book_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/book.png')
+        question_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/question.png')
 
         print(str(Path(os.getcwd()).parents[0]))
         # Главное окно
-        self.setFixedSize(1300, 1200)
+        self.resize(1300, 1200)
         self.setWindowTitle('Safety calc (v.1.0)')
         self.setWindowIcon(self.main_ico)
 
@@ -101,6 +102,9 @@ class Calc_gui(QtWidgets.QMainWindow):
         # 1.3.4. Вспышка-НКПР
         lclp_calc = QtWidgets.QAction(book_ico, 'Пожар-вспышка', self)
         lclp_calc.triggered.connect(self.change_method)
+        # 1.3.5. Вспышка-НКПР
+        about_prog = QtWidgets.QAction(question_ico, "Cправка", self)
+        about_prog.triggered.connect(self.about_prog)
 
         # Меню
         menubar = self.menuBar()
@@ -114,11 +118,18 @@ class Calc_gui(QtWidgets.QMainWindow):
         method_menu.addAction(fireball_calc)
         method_menu.addAction(lclp_calc)
         help_menu = menubar.addMenu('Справка')
-        # help_menu.addAction(help_show)
-        # help_menu.addAction(about_prog)
+        help_menu.addAction(about_prog)
 
         if not parent:
             self.show()
+
+    def about_prog(self):
+        msg = QtWidgets.QMessageBox(self)
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setWindowTitle("Информация")
+        msg.setText(f"Разработчик: ООО НПФ ГСК (89172656091)")
+        msg.exec()
+        return
 
     def table_data_view(self):
         header_list = ['Параметр', 'Значение']
@@ -206,7 +217,7 @@ class Calc_gui(QtWidgets.QMainWindow):
             return False
 
     def recvall(self, sock):
-        BUFF_SIZE = 8192  # 4 KiB
+        BUFF_SIZE = 256 # 4 KiB
         data = b''
         while True:
             part = sock.recv(BUFF_SIZE)
@@ -239,7 +250,6 @@ class Calc_gui(QtWidgets.QMainWindow):
             str = f'(1, {data})'
             sock.send(bytes(str, encoding='utf-8'))
             res = self.recvall(sock)
-            print(res.decode())
             sock.close()
             return res
         elif ind == 1:
@@ -248,7 +258,6 @@ class Calc_gui(QtWidgets.QMainWindow):
             str = f'(4, {data})'
             sock.send(bytes(str, encoding='utf-8'))
             res = self.recvall(sock)
-            print(res.decode())
             sock.close()
             return res
 
@@ -258,7 +267,6 @@ class Calc_gui(QtWidgets.QMainWindow):
             str = f'(7, {data})'
             sock.send(bytes(str, encoding='utf-8'))
             res = self.recvall(sock)
-            print(res.decode())
             sock.close()
             return res
 
@@ -268,7 +276,6 @@ class Calc_gui(QtWidgets.QMainWindow):
             str = f'(10, {data})'
             sock.send(bytes(str, encoding='utf-8'))
             res = self.recvall(sock)
-            print(res.decode())
             sock.close()
             return res
 
@@ -315,12 +322,10 @@ class Calc_gui(QtWidgets.QMainWindow):
             return
         zone = self.get_zone_in_server(data_list)
         for_chart = self.get_data_for_chart_in_server(data_list)
-        print(for_chart)
-        print(len(for_chart))
         self.result_text.setPlainText(self.report(eval(zone)))
-        self.create_chart(eval(for_chart))
+        self.create_chart(for_chart)
 
-    def create_chart(self, data: list):
+    def create_chart(self, data:bytes):
         text = self.selected_method.text()
         methods = ['Пожар пролива', 'Взрыв (СП 12.13130-2009)', 'Взрыв (Методика ТВС)', 'Огненный шар', 'Пожар-вспышка']
         ind = methods.index(text)
@@ -331,6 +336,12 @@ class Calc_gui(QtWidgets.QMainWindow):
         pen3 = pg.mkPen(color=(0, 255, 0), width=3, style=QtCore.Qt.SolidLine)
         pen4 = pg.mkPen(color=(0, 255, 255), width=3, style=QtCore.Qt.SolidLine)
         styles = {'color': 'b', 'font-size': '15px'}
+
+        if not ind == 4:
+            data = eval(data)
+        else:
+            return
+
 
         if ind == 0:
             radius = [float(i) for i in data[0]]
@@ -433,9 +444,6 @@ class Calc_gui(QtWidgets.QMainWindow):
             qraph4.setLabel('left', 'Вероятность поражения, -', **styles)
             qraph4.setLabel('bottom', 'Расстояние, м2', **styles)
             qraph4.showGrid(x=True, y=True)
-
-        if ind == 4:
-            pass
 
     def save_chart(self):
         exporter = pg_exp.ImageExporter(self.chart_layout.scene())

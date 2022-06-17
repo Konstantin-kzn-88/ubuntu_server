@@ -126,9 +126,7 @@ class Safety_server(socketserver.BaseRequestHandler):
             return num_direction, data
 
     def send_msg(self, sock, msg):
-        # Каждое сообщение будет иметь префикс в 4 байта блинной(network byte order)
-        # msg = struct.pack('>I', len(msg)) + msg
-        sock.send(msg)
+        sock.sendall(msg)
 
 if __name__ == '__main__':
     with ThredingTCPServer(('', 8888), Safety_server) as server:

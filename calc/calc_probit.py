@@ -42,7 +42,7 @@ class Probit:
         else:
             probability_death = q_vp
 
-        return probability_death
+        return round(probability_death,3)
 
     def probit_explosion(self, delta_P: float, impuls: float) -> float:
         """
@@ -61,7 +61,7 @@ class Probit:
         probit = 5 - 0.26 * math.log(V1)
         probit = self.probit_check(probit)
 
-        return probit
+        return round(probit,3)
 
     def probit_fireball(self, time: float, q_ball: float) -> float:
         """
@@ -78,7 +78,7 @@ class Probit:
         probit = -12.8 + 2.56 * math.log(time * (q_ball ** (4 / 3)))
         probit = self.probit_check(probit)
 
-        return probit
+        return round(probit,3)
 
     def probit_strait_fire(self, dist: float, q_max: float) -> float:
         """
@@ -87,13 +87,13 @@ class Probit:
         :@param q_max: максимальная интенсивность на заданном расстоянии, кВт/м2
         """
 
-        t0 = 120  # время обнаружения пожара по методике, с
+        t0 = 30  # время обнаружения пожара по методике, с
         speed = 1  # средняя скорость, м/с
         time = t0 + (dist*5 / speed)
         probit = -12.8 + 2.56 * math.log(time * (q_max ** (4 / 3)))
         probit = self.probit_check(probit)
 
-        return probit
+        return round(probit,3)
 
 
 if __name__ == '__main__':
