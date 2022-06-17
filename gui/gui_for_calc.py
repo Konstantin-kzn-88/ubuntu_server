@@ -151,6 +151,8 @@ class Calc_gui(QtWidgets.QMainWindow):
 
     def change_method(self):
         text = self.sender().text()
+        self.chart_layout.clear()
+        self.result_text.setPlainText('')
         self.selected_method.setText(text)
         self.set_param_names_in_table()
 
@@ -316,7 +318,7 @@ class Calc_gui(QtWidgets.QMainWindow):
         print(for_chart)
         print(len(for_chart))
         self.result_text.setPlainText(self.report(eval(zone)))
-        # self.create_chart(eval(for_chart))
+        self.create_chart(eval(for_chart))
 
     def create_chart(self, data: list):
         text = self.selected_method.text()
