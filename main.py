@@ -1,3 +1,5 @@
+import os
+import time
 import socketserver
 import datetime
 from calc.calc_strait_fire import Strait_fire
@@ -5,7 +7,6 @@ from calc.calc_sp_explosion import Explosion
 from calc.calc_tvs_explosion import Explosion as Explosion_tvs
 from calc.calc_fireball import Fireball
 from calc.calc_lower_concentration import LCLP
-import struct
 
 
 class ThredingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -107,7 +108,13 @@ class Safety_server(socketserver.BaseRequestHandler):
         @param request: данные которые передал пользователь
         @param answer: ответ сервера
         """
-        with open("log.txt", 'a') as file:
+        path = os.getcwd() + '\logs'
+        if os.path.exists(path):
+            os.rmdir(path)
+        os.makedirs(path)
+
+
+        with open(f"{path}\log{int(time.time())}.txt", 'a') as file:
             today = datetime.datetime.today()
             file.write("-" * 10 + '\n')
             file.write(addres + '\n')

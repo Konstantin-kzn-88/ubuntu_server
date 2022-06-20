@@ -25,7 +25,7 @@ class Calc_gui(QtWidgets.QMainWindow):
         book_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/book.png')
         question_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/question.png')
 
-        print(str(Path(os.getcwd()).parents[0]))
+        # print(str(Path(os.getcwd()).parents[0]))
         # Главное окно
         self.resize(1300, 1200)
         self.setWindowTitle('Safety calc (v.1.0)')
