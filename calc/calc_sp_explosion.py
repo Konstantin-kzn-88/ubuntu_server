@@ -91,7 +91,7 @@ class Explosion:
             impulse_arr.append(impulse)
             probit_arr.append(probit)
             probability_arr.append(probability)
-            radius += 0.5
+            radius += 0.1
 
         result = (radius_arr, delta_p_arr, impulse_arr, probit_arr, probability_arr)
 
@@ -115,7 +115,7 @@ class Explosion:
         radius_array = res_list[0]
 
         for CZA in classified_zone_array:
-            sort = list(filter((lambda x: CZA + 5 > x > CZA - 0.1), delta_p_array))
+            sort = list(filter((lambda x: CZA + 5 > x > CZA - 1), delta_p_array))
             if sort == []:
                 radius_CZA.append(0)
             else:
@@ -127,19 +127,10 @@ class Explosion:
 if __name__ == '__main__':
 
 
-    # ev_class = Explosion()
-    # mass = 2000
-    # heat_of_combustion = 46000
-    # z = 0.1
-    # radius = 500
-    #
-    # print(ev_class.explosion_class_zone(mass, heat_of_combustion, z))
-
     ev_class = Explosion()
-    mass = 600*530*0.8
+    mass = 10
     heat_of_combustion = 46000
     z = 0.1
-    radius = 500
 
-    print(ev_class.explosion_point(mass, heat_of_combustion, z, radius))
-#     По ГОСТ delta_p=16.2, impulse=1000
+    print(ev_class.explosion_class_zone(mass, heat_of_combustion, z))
+

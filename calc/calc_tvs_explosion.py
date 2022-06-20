@@ -161,7 +161,7 @@ class Explosion:
         radius_array = res_list[0]
 
         for CZA in classified_zone_array:
-            sort = list(filter((lambda x: CZA + 5 > x > CZA - 0.1), delta_p_array))
+            sort = list(filter((lambda x: CZA + 5 > x > CZA - 1), delta_p_array))
             if sort == []:
                 radius_CZA.append(0)
             else:

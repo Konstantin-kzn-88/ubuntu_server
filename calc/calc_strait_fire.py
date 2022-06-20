@@ -173,7 +173,7 @@ class Strait_fire:
         radius_array = res_list[0]
 
         for CZA in classified_zone_array:
-            sort = list(filter((lambda x: CZA + 0.3 > x > CZA - 0.1), q_term_array))
+            sort = list(filter((lambda x: CZA + 0.3 > x > CZA - 1), q_term_array))
             if sort == []:
                 radius_CZA.append(0)
             else:

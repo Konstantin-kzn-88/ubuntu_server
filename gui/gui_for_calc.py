@@ -13,8 +13,8 @@ import socket
 import pyqtgraph.exporters as pg_exp
 import time
 
-IP = '127.0.0.1'
-
+IP = '45.142.36.191'
+# IP = '127.0.0.1'
 
 class Calc_gui(QtWidgets.QMainWindow):
     def __init__(self, parent=None) -> None:
@@ -222,7 +222,7 @@ class Calc_gui(QtWidgets.QMainWindow):
         while True:
             part = sock.recv(BUFF_SIZE)
             data += part
-            if len(part) < BUFF_SIZE:
+            if len(part) == 0:
                 break
         return data
 
@@ -322,6 +322,7 @@ class Calc_gui(QtWidgets.QMainWindow):
             return
         zone = self.get_zone_in_server(data_list)
         for_chart = self.get_data_for_chart_in_server(data_list)
+        print(zone)
         self.result_text.setPlainText(self.report(eval(zone)))
         self.create_chart(for_chart)
 
