@@ -1,7 +1,7 @@
 import random
 from unittest import TestCase, main
 from calc import calc_strait_fire, calc_probit, calc_sp_explosion, calc_tvs_explosion, calc_fireball, \
-    calc_lower_concentration
+    calc_lower_concentration, calc_liguid_evaporation
 
 
 class ServerTest(TestCase):
@@ -69,7 +69,7 @@ class ServerTest(TestCase):
     def test_probability(self):
         self.assertEqual(calc_probit.Probit().probability(probit=8.99), 0.99)
         self.assertEqual(calc_probit.Probit().probability(probit=-12), 0)
-        self.assertEqual(round(calc_probit.Probit().probability(probit=3.35), 2), 0.05)
+        self.assertEqual(round(calc_probit.Probit().probability(probit=3.35), 2), 0.06)
 
     def test_probit_explosion_with_null_param(self):
         with self.assertRaises(ValueError) as e:
@@ -243,7 +243,7 @@ class ServerTest(TestCase):
             calc_fireball.Fireball().fireball_point(mass=0, ef=450, radius=10)
         self.assertEqual('Фукнция не может принимать нулевые параметры', e.exception.args[0])
 
-    def test_fireball_explosion_tvs(self):
+    def test_fireball(self):
         for m in range(1000, 10000, 250):
             self.assertEqual(len(calc_fireball.Fireball().fireball_array(mass=m, ef=450)[0]),
                              len(calc_fireball.Fireball().fireball_array(mass=m, ef=450)[1]))
@@ -268,6 +268,46 @@ class ServerTest(TestCase):
                                                                                 lower_concentration=l)[0], 1), 0)
 
     # END
+
+    # START 6. Тестирование испарения ненагретой жидкости
+    def test_evaporation(self):
+        self.assertEqual(
+            round(calc_liguid_evaporation.Liquid_evaporation().evaporation_in_moment(time=3600, steam_pressure=35,
+                                                                                     molar_mass=100, strait_area=200)[0],
+                  0),
+            252)
+
+    def test_evaporation_greater_than_zero(self):
+        for time in range(100, 3600, 100):
+            steam_pressure = random.randint(20, 100)
+            molar_mass = random.randint(20, 200)
+            strait_area = random.randint(20, 20000)
+            self.assertGreater(calc_liguid_evaporation.Liquid_evaporation().evaporation_in_moment(time, steam_pressure,
+                                                                                                  molar_mass,
+                                                                                                  strait_area)[0], 0)
+
+
+    def test_evaporation_with_null_param(self):
+        with self.assertRaises(ValueError) as e:
+            calc_liguid_evaporation.Liquid_evaporation().evaporation_in_moment(time=0, steam_pressure=0,
+                                                                               molar_mass=0, strait_area=0)
+        self.assertEqual('Фукнция не может принимать нулевые параметры', e.exception.args[0])
+
+        with self.assertRaises(ValueError) as e:
+            calc_liguid_evaporation.Liquid_evaporation().evaporation_array(steam_pressure=0, molar_mass=0,
+                                                                           strait_area=0)
+        self.assertEqual('Фукнция не может принимать нулевые параметры', e.exception.args[0])
+
+    def test_evaporation_eq_len(self):
+        for time in range(1000, 10000, 250):
+            self.assertEqual(
+                len(calc_liguid_evaporation.Liquid_evaporation().evaporation_array(steam_pressure=20, molar_mass=210,
+                                                                                   strait_area=2000)[0]),
+                len(calc_liguid_evaporation.Liquid_evaporation().evaporation_array(steam_pressure=20, molar_mass=210,
+                                                                                   strait_area=2000)[1]))
+
+    # END
+
 
 
 if __name__ == '__main__':

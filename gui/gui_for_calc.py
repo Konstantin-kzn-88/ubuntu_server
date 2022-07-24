@@ -13,8 +13,12 @@ import socket
 import pyqtgraph.exporters as pg_exp
 import time
 
-IP = '45.142.36.191'
-# IP = '127.0.0.1'
+# IP = '45.142.36.191'
+IP = '127.0.0.1'
+METHODS = ('Пожар пролива', 'Взрыв (СП 12.13130-2009)', 'Взрыв (Методика ТВС)', 'Огненный шар', 'Пожар-вспышка',
+           'Испарение ненагретой жидкости')
+
+
 
 class Calc_gui(QtWidgets.QMainWindow):
     def __init__(self, parent=None) -> None:
@@ -102,7 +106,10 @@ class Calc_gui(QtWidgets.QMainWindow):
         # 1.3.4. Вспышка-НКПР
         lclp_calc = QtWidgets.QAction(book_ico, 'Пожар-вспышка', self)
         lclp_calc.triggered.connect(self.change_method)
-        # 1.3.5. Вспышка-НКПР
+        # 1.3.4. Вспышка-НКПР
+        evaporation_calc = QtWidgets.QAction(book_ico, 'Испарение ненагретой жидкости', self)
+        evaporation_calc.triggered.connect(self.change_method)
+        # 1.3._. Вспышка-НКПР
         about_prog = QtWidgets.QAction(question_ico, "Cправка", self)
         about_prog.triggered.connect(self.about_prog)
 
@@ -117,6 +124,7 @@ class Calc_gui(QtWidgets.QMainWindow):
         method_menu.addAction(explosion_tvs_calc)
         method_menu.addAction(fireball_calc)
         method_menu.addAction(lclp_calc)
+        method_menu.addAction(evaporation_calc)
         help_menu = menubar.addMenu('Справка')
         help_menu.addAction(about_prog)
 
@@ -141,14 +149,14 @@ class Calc_gui(QtWidgets.QMainWindow):
     def set_param_names_in_table(self):
         self.table_data.setRowCount(0)
         text = self.selected_method.text()
-        methods = ['Пожар пролива', 'Взрыв (СП 12.13130-2009)', 'Взрыв (Методика ТВС)', 'Огненный шар', 'Пожар-вспышка']
         names = [('Площадь, м2', 'm, кг/(с*м2) ', 'Mmol, кг/кмоль', 'Ткип, град.С', 'Ветер, м/с'),
                  ('Масса, кг', 'Qсг, кДж/кг ', 'z, -'),
                  ('Класс в-ва', 'Класс прост-ва', 'Масса, кг', 'Qсг, кДж/кг', 'sigma, -', 'Энергозапас, -'),
-                 ('Масса, кг', 'Ef, кВт/м2'), ('Масса, кг', 'Mmol, кг/кмоль', 'Ткип, град.С', 'НКПР, об.%')]
-        rows_tuple = (5, 3, 6, 2, 4)
+                 ('Масса, кг', 'Ef, кВт/м2'), ('Масса, кг', 'Mmol, кг/кмоль', 'Ткип, град.С', 'НКПР, об.%'),
+                 ('Давление пара, кПа', 'Mmol, кг/кмоль', 'Площадь пролива, м2')]
+        rows_tuple = (5, 3, 6, 2, 4, 3)
 
-        ind = methods.index(text)
+        ind = METHODS.index(text)
         name = names[ind]
         rows = rows_tuple[ind]
 
@@ -159,6 +167,7 @@ class Calc_gui(QtWidgets.QMainWindow):
                     item = QtWidgets.QTableWidgetItem(name[row])
                     item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
                     self.table_data.setItem(row, col, item)
+                    self.table_data.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
 
     def change_method(self):
         text = self.sender().text()
@@ -185,10 +194,9 @@ class Calc_gui(QtWidgets.QMainWindow):
 
         # Повека корректнос веденх значений
         text = self.selected_method.text()
-        methods = ['Пожар пролива', 'Взрыв (СП 12.13130-2009)', 'Взрыв (Методика ТВС)', 'Огненный шар', 'Пожар-вспышка']
         chek = [(float, float, float, float, float), (float, float, float), (int, int, float, float, float, float),
-                (float, float), (int, float, float, float)]
-        ind = methods.index(text)
+                (float, float), (int, float, float, float), (float, float, float)]
+        ind = METHODS.index(text)
 
         for i in data_list:
             try:
@@ -217,7 +225,7 @@ class Calc_gui(QtWidgets.QMainWindow):
             return False
 
     def recvall(self, sock):
-        BUFF_SIZE = 256 # 4 KiB
+        BUFF_SIZE = 256  # 4 KiB
         data = b''
         while True:
             part = sock.recv(BUFF_SIZE)
@@ -228,22 +236,19 @@ class Calc_gui(QtWidgets.QMainWindow):
 
     def get_zone_in_server(self, data: list):
         text = self.selected_method.text()
-        methods = ['Пожар пролива', 'Взрыв (СП 12.13130-2009)', 'Взрыв (Методика ТВС)', 'Огненный шар', 'Пожар-вспышка']
-        ind = methods.index(text)
-        server_call = (2, 5, 8, 11, 12)
+        ind = METHODS.index(text)
+        server_call = (2, 5, 8, 11, 12, 13)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((IP, 8888))
         str = f'({server_call[ind]}, {data})'
         sock.send(bytes(str, encoding='utf-8'))
         res = self.recvall(sock)
-        print(res.decode())
         sock.close()
         return res
 
     def get_data_for_chart_in_server(self, data: list):
         text = self.selected_method.text()
-        methods = ['Пожар пролива', 'Взрыв (СП 12.13130-2009)', 'Взрыв (Методика ТВС)', 'Огненный шар', 'Пожар-вспышка']
-        ind = methods.index(text)
+        ind = METHODS.index(text)
         if ind == 0:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((IP, 8888))
@@ -279,10 +284,18 @@ class Calc_gui(QtWidgets.QMainWindow):
             sock.close()
             return res
 
+        elif ind == 5:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((IP, 8888))
+            str = f'(14, {data})'
+            sock.send(bytes(str, encoding='utf-8'))
+            res = self.recvall(sock)
+            sock.close()
+            return res
+
     def report(self, data: list):
         text = self.selected_method.text()
-        methods = ['Пожар пролива', 'Взрыв (СП 12.13130-2009)', 'Взрыв (Методика ТВС)', 'Огненный шар', 'Пожар-вспышка']
-        ind = methods.index(text)
+        ind = METHODS.index(text)
 
         if ind == 0:
             return (f'Зона 10.5 кВт/м2 = {data[0]} м \n'
@@ -315,21 +328,22 @@ class Calc_gui(QtWidgets.QMainWindow):
         elif ind == 4:
             return (f'Зона НКПР = {data[0]} м \n'
                     f'Зона Вспышки = {data[1]} м \n')
+        elif ind == 5:
+            return (f'Испарение за 3600 секунд составит {data[0]} кг')
 
     def calculate(self):
         data_list = self.get_data_in_table()
         if data_list == None:
             return
+
         zone = self.get_zone_in_server(data_list)
         for_chart = self.get_data_for_chart_in_server(data_list)
-        print(zone)
         self.result_text.setPlainText(self.report(eval(zone)))
         self.create_chart(for_chart)
 
-    def create_chart(self, data:bytes):
+    def create_chart(self, data: bytes):
         text = self.selected_method.text()
-        methods = ['Пожар пролива', 'Взрыв (СП 12.13130-2009)', 'Взрыв (Методика ТВС)', 'Огненный шар', 'Пожар-вспышка']
-        ind = methods.index(text)
+        ind = METHODS.index(text)
 
         self.chart_layout.clear()
         pen1 = pg.mkPen(color=(255, 0, 0), width=3, style=QtCore.Qt.SolidLine)
@@ -342,7 +356,6 @@ class Calc_gui(QtWidgets.QMainWindow):
             data = eval(data)
         else:
             return
-
 
         if ind == 0:
             radius = [float(i) for i in data[0]]
@@ -446,6 +459,16 @@ class Calc_gui(QtWidgets.QMainWindow):
             qraph4.setLabel('bottom', 'Расстояние, м2', **styles)
             qraph4.showGrid(x=True, y=True)
 
+
+        if ind == 5:
+            time = [float(i) for i in data[0]]
+            mass = [float(i) for i in data[1]]
+
+            qraph1 = self.chart_layout.addPlot(x=time, y=mass, pen=pen1, row=0, col=0)
+            qraph1.setLabel('left', 'Масса, кг', **styles)
+            qraph1.setLabel('bottom', 'Время, с', **styles)
+            qraph1.showGrid(x=True, y=True)
+
     def save_chart(self):
         exporter = pg_exp.ImageExporter(self.chart_layout.scene())
         desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
@@ -453,6 +476,7 @@ class Calc_gui(QtWidgets.QMainWindow):
         exporter.params.param('height').setValue(1000, blockSignal=exporter.heightChanged)
         # save to file
         exporter.export(f'{desktop}/{time.time()}.png')
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
