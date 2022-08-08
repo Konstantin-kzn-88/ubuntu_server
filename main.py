@@ -1,4 +1,7 @@
+import os
+import time
 import socketserver
+import datetime
 from calc.calc_strait_fire import Strait_fire
 from calc.calc_sp_explosion import Explosion
 from calc.calc_tvs_explosion import Explosion as Explosion_tvs
@@ -94,7 +97,31 @@ class Safety_server(socketserver.BaseRequestHandler):
         # self.request.sendall(ans)
         self.send_msg(self.request,ans)
 
+        # 6. Запишем лог
+        self.log_write(addres, request, str(answer))
 
+    def log_write(self, addres: str, request: str, answer: str):
+        """
+        Функция записи обращений к серверу. Записывает ip-адрес,
+        данные запроса, ответ сервера и дату(время) записи.
+        @param addres: ip-адрес который обращается к серверу
+        @param request: данные которые передал пользователь
+        @param answer: ответ сервера
+        """
+        path = os.getcwd() + '\logs'
+        if os.path.exists(path):
+            os.rmdir(path)
+        os.makedirs(path)
+
+
+        with open(f"{path}\log{int(time.time())}.txt", 'a') as file:
+            today = datetime.datetime.today()
+            file.write("-" * 10 + '\n')
+            file.write(addres + '\n')
+            file.write(request + '\n')
+            file.write(answer + '\n')
+            file.write(today.strftime("%Y-%m-%d-%H.%M.%S") + '\n')
+            file.write("-" * 10 + '\n')
 
     def get_data_in_request(self, request: str):
         try:
