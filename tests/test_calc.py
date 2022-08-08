@@ -69,7 +69,7 @@ class ServerTest(TestCase):
     def test_probability(self):
         self.assertEqual(calc_probit.Probit().probability(probit=8.99), 0.99)
         self.assertEqual(calc_probit.Probit().probability(probit=-12), 0)
-        self.assertEqual(round(calc_probit.Probit().probability(probit=3.35), 2), 0.05)
+        self.assertEqual(round(calc_probit.Probit().probability(probit=3.35), 2), 0.06)
 
     def test_probit_explosion_with_null_param(self):
         with self.assertRaises(ValueError) as e:

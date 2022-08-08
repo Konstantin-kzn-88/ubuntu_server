@@ -8,6 +8,7 @@
 
 import math
 from calc.calc_probit import Probit
+from calc._found_nearest_value import get_nearest_value
 
 
 class Fireball:
@@ -100,12 +101,8 @@ class Fireball:
         radius_array = res_list[0]
 
         for CZA in classified_zone_array:
-            sort = list(filter((lambda x: CZA + 10 > x > CZA - 1), d_term_array))
-            if sort == []:
-                radius_CZA.append(0)
-            else:
-                sort = min(sort)
-                radius_CZA.append(round(radius_array[d_term_array.index(sort)], 2))
+            ind = d_term_array.index(get_nearest_value(d_term_array, CZA))
+            radius_CZA.append(radius_array[ind])
         return radius_CZA
 
 
