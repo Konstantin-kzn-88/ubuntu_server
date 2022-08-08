@@ -7,6 +7,7 @@
 # -----------------------------------------------------------
 
 from calc.calc_probit import Probit
+from calc._found_nearest_value import get_nearest_value
 
 
 class Explosion:
@@ -115,12 +116,8 @@ class Explosion:
         radius_array = res_list[0]
 
         for CZA in classified_zone_array:
-            sort = list(filter((lambda x: CZA + 5 > x > CZA - 1), delta_p_array))
-            if sort == []:
-                radius_CZA.append(0)
-            else:
-                sort = min(sort)
-                radius_CZA.append(round(radius_array[delta_p_array.index(sort)], 2))
+            ind = delta_p_array.index(get_nearest_value(delta_p_array, CZA))
+            radius_CZA.append(radius_array[ind])
         return radius_CZA
 
 

@@ -7,6 +7,7 @@
 # -----------------------------------------------------------
 
 from calc.calc_probit import Probit
+from calc._found_nearest_value import get_nearest_value
 
 
 class Explosion:
@@ -123,15 +124,15 @@ class Explosion:
                                        energy_level, radius)
             delta_p = res[0]
             impulse = res[1]
-            probit = round(Probit().probit_explosion(delta_p, impulse),3)
-            probability = round(Probit().probability(probit),3)
+            probit = round(Probit().probit_explosion(delta_p, impulse), 3)
+            probability = round(Probit().probability(probit), 3)
             # append
             radius_arr.append(round(radius, 2))
             delta_p_arr.append(delta_p)
             impulse_arr.append(impulse)
             probit_arr.append(probit)
             probability_arr.append(probability)
-            radius += 0.5
+            radius += 0.1
 
         result = (radius_arr, delta_p_arr, impulse_arr, probit_arr, probability_arr)
 
@@ -161,36 +162,23 @@ class Explosion:
         radius_array = res_list[0]
 
         for CZA in classified_zone_array:
-            sort = list(filter((lambda x: CZA + 5 > x > CZA - 1), delta_p_array))
-            if sort == []:
+            if CZA > delta_p_array[0]:
                 radius_CZA.append(0)
             else:
-                sort = min(sort)
-                radius_CZA.append(round(radius_array[delta_p_array.index(sort)], 2))
+                ind = delta_p_array.index(get_nearest_value(delta_p_array, CZA))
+                radius_CZA.append(radius_array[ind])
         return radius_CZA
 
 
 if __name__ == '__main__':
     ev_class = Explosion()
-    class_substance = 1
-    view_space = 2
-    mass = 5000
+    class_substance = 3
+    view_space = 4
+    mass = 19
     heat_of_combustion = 46000
     sigma = 7
     energy_level = 2
 
-    print(ev_class.explosion_array(class_substance, view_space,
-                                   mass, heat_of_combustion, sigma,
-                                   energy_level))
-
-    # ev_class = Explosion()
-    # class_substance = 4
-    # view_space = 2
-    # mass = 2000
-    # heat_of_combustion = 4600
-    # sigma = 7
-    # energy_level = 2
-    #
-    # ev_class.explosion_plot(class_substance, view_space,
-    #                         mass, heat_of_combustion, sigma,
-    #                         energy_level)
+    print(ev_class.explosion_class_zone(class_substance, view_space,
+                                        mass, heat_of_combustion, sigma,
+                                        energy_level))
