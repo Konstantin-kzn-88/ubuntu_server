@@ -14,10 +14,10 @@ import pyqtgraph.exporters as pg_exp
 import time
 
 # IP = '45.142.36.191'
-
 IP = '127.0.0.1'
 METHODS = ('Пожар пролива', 'Взрыв (СП 12.13130-2009)', 'Взрыв (Методика ТВС)', 'Огненный шар', 'Пожар-вспышка',
            'Испарение ненагретой жидкости')
+
 
 
 class Calc_gui(QtWidgets.QMainWindow):
@@ -249,17 +249,49 @@ class Calc_gui(QtWidgets.QMainWindow):
     def get_data_for_chart_in_server(self, data: list):
         text = self.selected_method.text()
         ind = METHODS.index(text)
-        server_call = (1, 4, 7, 10, None, 14) # None это НКПР, там нет графика
-
-        if ind != 4:
+        if ind == 0:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((IP, 8888))
-            str = f'({server_call[ind]}, {data})'
+            str = f'(1, {data})'
+            sock.send(bytes(str, encoding='utf-8'))
+            res = self.recvall(sock)
+            sock.close()
+            return res
+        elif ind == 1:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((IP, 8888))
+            str = f'(4, {data})'
             sock.send(bytes(str, encoding='utf-8'))
             res = self.recvall(sock)
             sock.close()
             return res
 
+        elif ind == 2:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((IP, 8888))
+            str = f'(7, {data})'
+            sock.send(bytes(str, encoding='utf-8'))
+            res = self.recvall(sock)
+            sock.close()
+            return res
+
+        elif ind == 3:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((IP, 8888))
+            str = f'(10, {data})'
+            sock.send(bytes(str, encoding='utf-8'))
+            res = self.recvall(sock)
+            sock.close()
+            return res
+
+        elif ind == 5:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((IP, 8888))
+            str = f'(14, {data})'
+            sock.send(bytes(str, encoding='utf-8'))
+            res = self.recvall(sock)
+            sock.close()
+            return res
 
     def report(self, data: list):
         text = self.selected_method.text()
@@ -299,7 +331,6 @@ class Calc_gui(QtWidgets.QMainWindow):
         elif ind == 5:
             return (f'Испарение за 3600 секунд составит {round(data[0],1)} кг')
 
-
     def calculate(self):
         data_list = self.get_data_in_table()
         if data_list == None:
@@ -309,7 +340,6 @@ class Calc_gui(QtWidgets.QMainWindow):
         for_chart = self.get_data_for_chart_in_server(data_list)
         self.result_text.setPlainText(self.report(eval(zone)))
         self.create_chart(for_chart)
-
 
     def create_chart(self, data: bytes):
         text = self.selected_method.text()
@@ -429,6 +459,7 @@ class Calc_gui(QtWidgets.QMainWindow):
             qraph4.setLabel('bottom', 'Расстояние, м2', **styles)
             qraph4.showGrid(x=True, y=True)
 
+
         if ind == 5:
             time = [float(i) for i in data[0]]
             mass = [float(i) for i in data[1]]
@@ -437,7 +468,6 @@ class Calc_gui(QtWidgets.QMainWindow):
             qraph1.setLabel('left', 'Масса, кг', **styles)
             qraph1.setLabel('bottom', 'Время, с', **styles)
             qraph1.showGrid(x=True, y=True)
-
 
     def save_chart(self):
         exporter = pg_exp.ImageExporter(self.chart_layout.scene())

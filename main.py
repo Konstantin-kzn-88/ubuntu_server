@@ -1,12 +1,10 @@
-import os
-import time
 import socketserver
-import datetime
 from calc.calc_strait_fire import Strait_fire
 from calc.calc_sp_explosion import Explosion
 from calc.calc_tvs_explosion import Explosion as Explosion_tvs
 from calc.calc_fireball import Fireball
 from calc.calc_lower_concentration import LCLP
+from calc.calc_liguid_evaporation import Liquid_evaporation
 
 
 class ThredingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -26,9 +24,10 @@ class Safety_server(socketserver.BaseRequestHandler):
         # 2. Определим ip-адрес и информацию от клиента
         addres = str(self.client_address[0])
         request = str(bytes_in_handle.decode())
-
         # 3. Попоробем взять № пути обработки и данные
         num_direction, data = self.get_data_in_request(request)
+
+
 
         # 4. По номеру пути определим, то что нужно клиенту:
         #    Коды:
@@ -46,9 +45,12 @@ class Safety_server(socketserver.BaseRequestHandler):
         #      10 - огненный шар данные в каждой точке в виде кортежа (рассатояние, интенсивность, доза, пробит, вероятность)
         #      11 - огненный шар расстояние для доз [600, 320, 220, 120] кДж/м2
         #      12 - НКПР и пожар-вспышка
+        #      13 - Испарение ненагретой жидкости (для 3600 с)
+        #      14 - Испарение ненагретой жидкости в каждой точке времени в виде кортежа (время, масса)
 
         # Пожар пролива
         if num_direction == 0:
+
             answer = Strait_fire().termal_radiation_point(S_spill=data[0], m_sg=data[1], mol_mass=data[2],
                                                           t_boiling=data[3], wind_velocity=data[4], radius=data[5])
         elif num_direction == 1:
@@ -89,39 +91,21 @@ class Safety_server(socketserver.BaseRequestHandler):
         elif num_direction == 12:
             answer = LCLP().lower_concentration_limit(mass=data[0], mol_mass=data[1], t_boiling=data[2],
                                                       lower_concentration=data[3])
+        # Испарение ненагретой жидкости
+        elif num_direction == 13:
+            answer = Liquid_evaporation().evaporation_in_moment(time = 3600, steam_pressure=data[0], molar_mass=data[1],
+                                                            strait_area=data[2])
+        elif num_direction == 14:
+            answer = Liquid_evaporation().evaporation_array(steam_pressure=data[0], molar_mass=data[1],
+                                                            strait_area=data[2])
+
         else:
             answer = 'error'
 
         # 5. Закодируем ответ в байты и отправим его пользователю
         ans = bytes(str(answer), encoding='utf-8')
         # self.request.sendall(ans)
-        self.send_msg(self.request,ans)
-
-        # 6. Запишем лог
-        self.log_write(addres, request, str(answer))
-
-    def log_write(self, addres: str, request: str, answer: str):
-        """
-        Функция записи обращений к серверу. Записывает ip-адрес,
-        данные запроса, ответ сервера и дату(время) записи.
-        @param addres: ip-адрес который обращается к серверу
-        @param request: данные которые передал пользователь
-        @param answer: ответ сервера
-        """
-        path = os.getcwd() + '\logs'
-        if os.path.exists(path):
-            os.rmdir(path)
-        os.makedirs(path)
-
-
-        with open(f"{path}\log{int(time.time())}.txt", 'a') as file:
-            today = datetime.datetime.today()
-            file.write("-" * 10 + '\n')
-            file.write(addres + '\n')
-            file.write(request + '\n')
-            file.write(answer + '\n')
-            file.write(today.strftime("%Y-%m-%d-%H.%M.%S") + '\n')
-            file.write("-" * 10 + '\n')
+        self.send_msg(self.request, ans)
 
     def get_data_in_request(self, request: str):
         try:
@@ -134,6 +118,7 @@ class Safety_server(socketserver.BaseRequestHandler):
 
     def send_msg(self, sock, msg):
         sock.sendall(msg)
+
 
 if __name__ == '__main__':
     with ThredingTCPServer(('', 8888), Safety_server) as server:
